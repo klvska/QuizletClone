@@ -1,0 +1,31 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  sets     Set[]
+}
+
+model Set {
+  id     Int    @id @default(autoincrement())
+  title  String
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+  cards  Card[]
+}
+
+model Card {
+  id       Int    @id @default(autoincrement())
+  question String
+  answer   String
+  setId    Int
+  set      Set    @relation(fields: [setId], references: [id])
+}
