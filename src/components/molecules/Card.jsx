@@ -2,8 +2,9 @@ import PropTypes from 'prop-types';
 
 const Card = ({ question, answer }) => {
     return (
-        <div className="border p-4 rounded shadow">
-            <h3 className="font-bold">{question}</h3>
+        //TODO: Implement the Card component
+        <div className="border p-4 flex rounded shadow">
+            <p className="font-bold">{question}</p>
             <p>{answer}</p>
         </div>
     );
