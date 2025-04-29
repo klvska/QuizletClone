@@ -307,10 +307,8 @@ app.post("/quizzes/:quizId/attempt", authenticateToken, async (req, res) => {
       data: {
         correctAnswers: { increment: correctAnswers },
         incorrectAnswers: { increment: incorrectAnswers },
-        bestQuizScore:
-          score > (userStats.bestQuizScore || 0) ? score : undefined,
-        longestStreak:
-          maxStreak > (userStats.longestStreak || 0) ? maxStreak : undefined,
+        bestQuizScore: score > (userStats.bestQuizScore || 0) ? score : userStats.bestQuizScore,
+        longestStreak: maxStreak > (userStats.longestStreak || 0) ? maxStreak : userStats.longestStreak,
         todayQuizzes: isQuizToday ? { increment: 1 } : 1,
         lastQuizDate: today,
         totalStudyTime: { increment: Math.ceil(timeSpent / 60) }, // konwersja sekund na minuty
@@ -488,8 +486,8 @@ app.post("/test/:setId/complete", authenticateToken, async (req, res) => {
 
     // Sprawdź, czy to jest test wykonany dzisiaj
     const today = new Date();
-    const lastTestDate = userStats.lastTestDate
-      ? new Date(userStats.lastTestDate)
+    const lastTestDate = userStats.lastQuizDate
+      ? new Date(userStats.lastQuizDate)
       : null;
     const isTestToday =
       lastTestDate &&
@@ -497,16 +495,21 @@ app.post("/test/:setId/complete", authenticateToken, async (req, res) => {
       lastTestDate.getMonth() === today.getMonth() &&
       lastTestDate.getFullYear() === today.getFullYear();
 
+    // Oblicz wynik procentowy
+    const totalAnswers = correctAnswers + incorrectAnswers;
+    const score = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+
     // Aktualizuj statystyki użytkownika
     await prisma.userStats.update({
       where: { userId: req.user.userId },
       data: {
         correctAnswers: { increment: correctAnswers },
         incorrectAnswers: { increment: incorrectAnswers },
-        totalTests: { increment: 1 },
-        todayTests: isTestToday ? { increment: 1 } : 1,
-        lastTestDate: today,
+        totalQuizzes: { increment: 1 },
+        todayQuizzes: isTestToday ? { increment: 1 } : 1,
+        lastQuizDate: today,
         totalStudyTime: { increment: Math.ceil(timeSpent / 60) }, // konwersja sekund na minuty
+        bestQuizScore: score > (userStats.bestQuizScore || 0) ? score : userStats.bestQuizScore,
       },
     });
 
@@ -570,7 +573,7 @@ app.post("/learn/:setId/complete", authenticateToken, async (req, res) => {
 
 // Endpoint dla zapisania wyników
 app.post("/results/:setId/save", authenticateToken, async (req, res) => {
-  const { streak, timeSpent, correctAnswers, incorrectAnswers } = req.body;
+  const { streak, timeSpent } = req.body;
 
   try {
     // Pobierz aktualne statystyki użytkownika
@@ -582,10 +585,7 @@ app.post("/results/:setId/save", authenticateToken, async (req, res) => {
     await prisma.userStats.update({
       where: { userId: req.user.userId },
       data: {
-        correctAnswers: { increment: correctAnswers },
-        incorrectAnswers: { increment: incorrectAnswers },
-        longestStreak:
-          streak > (userStats.longestStreak || 0) ? streak : undefined,
+        longestStreak: streak > (userStats.longestStreak || 0) ? streak : userStats.longestStreak,
         totalStudyTime: { increment: Math.ceil(timeSpent / 60) }, // konwersja sekund na minuty
       },
     });

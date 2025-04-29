@@ -28,20 +28,6 @@ const Results = () => {
         );
         setSetInfo(response.data);
 
-        // Zapisz wyniki
-        await axios.post(
-          `http://localhost:3001/results/${setId}/save`,
-          {
-            streak: stats.streak,
-            timeSpent: location.state?.timeSpent || 0,
-            correctAnswers: stats.correct,
-            incorrectAnswers: stats.incorrect,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
         // Znajdź quiz dla tego zestawu
         const quizResponse = await axios.get(
           `http://localhost:3001/quizzes?setId=${setId}`,
@@ -58,7 +44,7 @@ const Results = () => {
             `http://localhost:3001/quizzes/${quiz.id}/attempt`,
             {
               answers: JSON.stringify(progress),
-              timeSpent: 0, // TODO: dodać śledzenie czasu
+              timeSpent: location.state?.timeSpent || 0,
               score:
                 Math.round(
                   (stats.correct / (stats.correct + stats.incorrect)) * 100
