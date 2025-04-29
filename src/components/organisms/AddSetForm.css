@@ -1,0 +1,156 @@
+.form-container {
+  min-height: 100vh;
+  background-color: #0a092d;
+  color: white;
+  padding: 2rem;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.form-title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-section {
+  background-color: #2e3856;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-input {
+  width: 100%;
+  background-color: #1a1d28;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  outline: none;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  border-color: #4255ff;
+}
+
+.form-textarea {
+  resize: none;
+  min-height: 8rem;
+}
+
+.card-container {
+  display: grid;
+  gap: 1rem;
+}
+
+.card-item {
+  background-color: #2e3856;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-number {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.card-remove {
+  color: #ef4444;
+  transition: color 0.2s ease-in-out;
+}
+
+.card-remove:hover {
+  color: #dc2626;
+}
+
+.card-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.card-image {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.card-image-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4255ff;
+  transition: color 0.2s ease-in-out;
+}
+
+.card-image-button:hover {
+  color: #2b3bcc;
+}
+
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.button-primary {
+  background-color: #4255ff;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #2b3bcc;
+}
+
+.button-secondary {
+  background-color: #2e3856;
+  color: white;
+}
+
+.button-secondary:hover {
+  background-color: #4255ff;
+}
+
+.button-icon {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #2e3856;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.button-icon:hover {
+  background-color: #4255ff;
+}

@@ -1,118 +1,429 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import './Sets.css';
-import arrow from '../../../assets/arrow.svg';
-import Modal from '../../molecules/Modal';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  FaVolumeUp,
+  FaArrowLeft,
+  FaArrowRight,
+  FaSearch,
+  FaShareAlt,
+  FaEllipsisH,
+} from "react-icons/fa";
+import axios from "axios";
+import "./Sets.css";
+import Modal from "../../molecules/Modal";
+import PropTypes from "prop-types";
 
 const Sets = () => {
-    const { setId } = useParams();
-    const [cards, setCards] = useState([]);
-    const [isFlipped, setIsFlipped] = useState(false);
-    const [currentIdx, setCurrentIdx] = useState(0);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const { setId } = useParams();
+  const navigate = useNavigate();
+  const [cards, setCards] = useState([]);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isTracking, setIsTracking] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [setInfo, setSetInfo] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [progress, setProgress] = useState({});
 
-    useEffect(() => {
-        fetch(`http://localhost:3001/sets/${setId}/cards`)
-            .then((response) => response.json())
-            .then((data) => {
-                setCards(data);
-            })
-            .catch((error) => {
-                console.error('Error fetching cards:', error);
-            });
-    }, [setId]);
-
-    const handleCardClick = () => {
-        setIsFlipped(!isFlipped);
-    };
-
-    const handleNextCard = () => {
-        if (currentIdx < cards.length - 1) {
-            setCurrentIdx(currentIdx + 1);
-        } else {
-            setCurrentIdx(0);
-            setIsModalOpen(true);
+  useEffect(() => {
+    const fetchSet = async () => {
+      try {
+        if (!setId) {
+          setError("Nieprawidłowe ID zestawu");
+          setLoading(false);
+          return;
         }
-    };
 
-    const handlePreviousCard = () => {
-        if (currentIdx > 0) {
-            setCurrentIdx(currentIdx - 1);
-        } else {
-            setCurrentIdx(cards.length - 1);
+        const numericSetId = parseInt(setId);
+        if (isNaN(numericSetId)) {
+          setError("Nieprawidłowe ID zestawu");
+          setLoading(false);
+          return;
         }
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Nie jesteś zalogowany");
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `http://localhost:3001/sets/${numericSetId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setCards(response.data.cards);
+        setSetInfo(response.data);
+
+        // Pobierz zapisany postęp dla zestawu
+        try {
+          const progressResponse = await axios.get(
+            `http://localhost:3001/sets/${numericSetId}/progress`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          setProgress(progressResponse.data.progress || {});
+        } catch (progressError) {
+          console.error("Error fetching progress:", progressError);
+          setProgress({});
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching set:", error);
+        setError(
+          error.response?.data?.error || "Nie udało się załadować zestawu"
+        );
+        setLoading(false);
+      }
     };
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.keyCode === 39) { // Right arrow key
-                handleNextCard();
-            }
-            if (event.keyCode === 37) { // Left arrow key
-                handlePreviousCard();
-            }
-            if (event.keyCode === 32) { // Space key
-                handleCardClick();
-            }
-        };
+    fetchSet();
+  }, [setId]);
 
-        window.addEventListener('keydown', handleKeyDown);
+  const handleCardClick = () => {
+    setIsFlipped(!isFlipped);
+  };
 
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [currentIdx, cards.length]);
+  const handleNextCard = () => {
+    if (currentCardIndex < cards.length - 1) {
+      setCurrentCardIndex(currentCardIndex + 1);
+      setIsFlipped(false);
+    } else {
+      setCurrentCardIndex(0);
+      setIsModalOpen(true);
+    }
+  };
 
-    const progressPercentage = (currentIdx + 1) / cards.length * 100;
+  const handlePreviousCard = () => {
+    if (currentCardIndex > 0) {
+      setCurrentCardIndex(currentCardIndex - 1);
+      setIsFlipped(false);
+    } else {
+      setCurrentCardIndex(cards.length - 1);
+      setIsFlipped(false);
+    }
+  };
 
+  const handleCreateQuiz = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Nie jesteś zalogowany");
+        return;
+      }
+
+      const numericSetId = parseInt(setId);
+      if (isNaN(numericSetId)) {
+        setError("Nieprawidłowe ID zestawu");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:3001/quizzes",
+        {
+          title: `${setInfo.title} - Quiz`,
+          description: `Quiz utworzony z zestawu "${setInfo.title}"`,
+          timeLimit: 300,
+          maxAttempts: 3,
+          passingScore: 70,
+          isPublic: true,
+          setId: numericSetId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      navigate(`/quiz/${response.data.id}`);
+    } catch (error) {
+      console.error("Error creating quiz:", error);
+      setError(error.response?.data?.error || "Nie udało się utworzyć quizu");
+    }
+  };
+
+  const handleToggleTracking = async () => {
+    const newTrackingState = !isTracking;
+    setIsTracking(newTrackingState);
+
+    if (newTrackingState) {
+      // Inicjalizuj postęp dla wszystkich kart, jeśli nie istnieje
+      const initialProgress = { ...progress };
+      cards.forEach((card) => {
+        if (!initialProgress[card.id]) {
+          initialProgress[card.id] = {
+            mastery: 0,
+            attempts: 0,
+            correct: 0,
+          };
+        }
+      });
+      setProgress(initialProgress);
+    }
+  };
+
+  const handleMemoryResponse = async (remembered) => {
+    if (!isTracking) return;
+
+    const currentCard = cards[currentCardIndex];
+    const cardProgress = progress[currentCard.id] || {
+      mastery: 0,
+      attempts: 0,
+      correct: 0,
+    };
+
+    const newProgress = {
+      ...progress,
+      [currentCard.id]: {
+        ...cardProgress,
+        attempts: cardProgress.attempts + 1,
+        correct: cardProgress.correct + (remembered ? 1 : 0),
+        mastery:
+          (cardProgress.correct + (remembered ? 1 : 0)) /
+          (cardProgress.attempts + 1),
+      },
+    };
+
+    setProgress(newProgress);
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `http://localhost:3001/sets/${setId}/progress`,
+        {
+          cardId: currentCard.id,
+          remembered,
+          progress: newProgress[currentCard.id],
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (error) {
+      console.error("Error updating progress:", error);
+    }
+
+    // Przejdź do następnej karty
+    handleNextCard();
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowRight") {
+        handleNextCard();
+      }
+      if (event.key === "ArrowLeft") {
+        handlePreviousCard();
+      }
+      if (event.key === " ") {
+        handleCardClick();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [currentCardIndex, cards.length]);
+
+  if (loading) {
     return (
-        <div className="flex flex-col justify-center items-stretch w-full min-h-full bg-gray-100">
-            <div className="flex justify-center items-stretch w-full h-full bg-gray-100">
-                <div className="px-5 pt-5 w-full max-w-screen-lg h-full">
-                    {cards.length > 0 ? (
-                        <div className={`flip-card ${isFlipped ? 'flipped' : ''}`} onClick={handleCardClick}>
-                            <div className="flip-card-inner">
-                                <div
-                                    className="flip-card-front flex justify-center items-center min-h-[584px] max-w-[1024px] border rounded-lg shadow-lg bg-sky-300">
-                                    <div className="p-8">
-                                        <p className="text-3xl font-bold">{cards.at(currentIdx).question}</p>
-                                    </div>
-                                </div>
-                                <div
-                                    className="flip-card-back flex justify-center items-center min-h-[584px] max-w-[1024px] border rounded-lg shadow-lg bg-sky-300">
-                                    <div className="p-8">
-                                        <p className="text-3xl font-bold">{cards.at(currentIdx).answer}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <p className="text-lg text-gray-600">No cards available</p>
-                    )}
-                </div>
-            </div>
-            <div className="flex justify-between items-center gap-10 max-w-[1024px] mx-auto">
-                <button className="mx-5 py-1"
-                        onClick={handlePreviousCard}>
-                    <img src={arrow} alt="Previous"
-                         className="w-16 h-16 transform rotate-180 cursor-pointer hover:scale-105 transition-transform duration-200"/>
-                </button>
-                <p className="text-xl font-bold">{currentIdx + 1} / {cards.length}</p>
-                <button className="mx-5 py-1"
-                        onClick={handleNextCard}>
-                    <img src={arrow} alt="Next"
-                         className="w-16 h-16 cursor-pointer hover:scale-105 transition-transform duration-200"/>
-                </button>
-            </div>
-            <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
-            </div>
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <h2 className="text-2xl font-bold">Congratulations, you've finished a set!</h2>
-                    <a href="#" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Quiz</a>
-            </Modal>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-[#0a092d] text-white">
+        <div className="text-xl">Ładowanie...</div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-[#0a092d] text-white">
+        <div className="text-xl text-red-500 mb-4">{error}</div>
+        <button
+          onClick={() => navigate("/")}
+          className="px-4 py-2 bg-[#4255ff] text-white rounded-full hover:bg-[#423ed8] transition-all duration-300"
+        >
+          Wróć do strony głównej
+        </button>
+      </div>
+    );
+  }
+
+  if (!cards.length) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-[#0a092d] text-white">
+        <div className="text-xl mb-4">Ten zestaw nie ma żadnych kart</div>
+        <button
+          onClick={() => navigate("/")}
+          className="px-4 py-2 bg-[#4255ff] text-white rounded-full hover:bg-[#423ed8] transition-all duration-300"
+        >
+          Wróć do strony głównej
+        </button>
+      </div>
+    );
+  }
+
+  const currentCard = cards[currentCardIndex];
+  const currentProgress = progress[currentCard.id] || {
+    mastery: 0,
+    attempts: 0,
+    correct: 0,
+  };
+  const masteryPercentage =
+    currentProgress.attempts > 0
+      ? Math.round((currentProgress.correct / currentProgress.attempts) * 100)
+      : 0;
+
+  return (
+    <div className="min-h-screen bg-[#0a092d] text-white p-4">
+      {/* Header */}
+      <div className="max-w-4xl mx-auto mb-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">{setInfo?.title}</h1>
+          <div className="flex gap-4">
+            <button className="icon-button">
+              <FaSearch />
+            </button>
+            <button className="icon-button">
+              <FaShareAlt />
+            </button>
+            <button className="icon-button">
+              <FaEllipsisH />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Learning modes */}
+      <div className="max-w-4xl mx-auto mb-8">
+        <div className="grid grid-cols-4 gap-4">
+          <button className="mode-card active">
+            <span className="mode-icon">🎴</span>
+            <span>Fiszki</span>
+          </button>
+          <button
+            className="mode-card"
+            onClick={() => navigate(`/sets/${setId}/learn`)}
+          >
+            <span className="mode-icon">📚</span>
+            <span>Ucz się</span>
+          </button>
+          <button
+            className="mode-card"
+            onClick={() => navigate(`/sets/${setId}/test-config`)}
+          >
+            <span className="mode-icon">✍️</span>
+            <span>Test</span>
+          </button>
+          <button className="mode-card">
+            <span className="mode-icon">🎮</span>
+            <span>Klocki</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Card */}
+      <div className="max-w-4xl mx-auto">
+        <div className="flip-card" onClick={handleCardClick}>
+          <div className={`flip-card-inner ${isFlipped ? "flipped" : ""}`}>
+            <div className="flip-card-front">
+              <p className="text-2xl">{cards[currentCardIndex]?.question}</p>
+              {isTracking && (
+                <div className="absolute bottom-4 left-4 text-sm text-[#a8b3cf]">
+                  Opanowanie: {masteryPercentage}%
+                </div>
+              )}
+            </div>
+            <div className="flip-card-back">
+              <p className="text-2xl">{cards[currentCardIndex]?.answer}</p>
+              {isTracking && (
+                <div className="absolute bottom-4 left-4 text-sm text-[#a8b3cf]">
+                  Próby: {currentProgress.attempts}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex justify-between items-center mt-8">
+          <div className="flex items-center gap-4">
+            <button
+              className="nav-button"
+              onClick={handlePreviousCard}
+              disabled={currentCardIndex === 0}
+            >
+              <FaArrowLeft />
+            </button>
+            <span>
+              {currentCardIndex + 1} / {cards.length}
+            </span>
+            <button
+              className="nav-button"
+              onClick={handleNextCard}
+              disabled={currentCardIndex === cards.length - 1}
+            >
+              <FaArrowRight />
+            </button>
+          </div>
+          <button className="icon-button">
+            <FaVolumeUp />
+          </button>
+        </div>
+
+        {/* Progress tracking */}
+        <div className="flex justify-between items-center mt-8">
+          <div className="flex items-center gap-2">
+            <div
+              className={`toggle-switch ${isTracking ? "active" : ""}`}
+              onClick={handleToggleTracking}
+            >
+              <div className="toggle-switch-handle" />
+            </div>
+            <span>Śledź postęp</span>
+          </div>
+          <div className="flex gap-4">
+            <button
+              className="memory-button wrong"
+              onClick={() => handleMemoryResponse(false)}
+              disabled={!isTracking}
+            >
+              Nie pamiętam
+            </button>
+            <button
+              className="memory-button correct"
+              onClick={() => handleMemoryResponse(true)}
+              disabled={!isTracking}
+            >
+              Pamiętam
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="p-6 bg-[#2e3856] rounded-xl">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Gratulacje, ukończyłeś zestaw!
+          </h2>
+          <button
+            onClick={handleCreateQuiz}
+            className="px-6 py-3 bg-[#4255ff] text-white rounded-full hover:bg-[#423ed8] transition-all duration-300"
+          >
+            Rozpocznij quiz
+          </button>
+        </div>
+      </Modal> */}
+    </div>
+  );
+};
+
+Sets.propTypes = {
+  title: PropTypes.string.isRequired,
 };
 
 export default Sets;

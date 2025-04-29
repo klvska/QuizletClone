@@ -1,0 +1,210 @@
+.stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.stats-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #1a365d;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.stat-card {
+  background-color: #2e3856;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #b1b1b1;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.error {
+  color: #e53e3e;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+}
+
+.achievement-badge {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: #1a1d28;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.achievement-badge:hover {
+  transform: translateY(-4px);
+}
+
+.achievement-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.achievement-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 20%;
+  background: linear-gradient(45deg, #4255ff, #b042ff);
+  padding: 3px;
+  animation: rotate 4s linear infinite;
+}
+
+.achievement-inner {
+  width: 100%;
+  height: 100%;
+  background: #1a1d28;
+  border-radius: 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-number {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #4255ff, #b042ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.achievement-info {
+  flex: 1;
+}
+
+.achievement-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #4255ff, #b042ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.achievement-desc {
+  color: #b1b1b1;
+  font-size: 0.9rem;
+}
+
+.calendar-grid {
+  background-color: #1a1d28;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-day-name {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #b1b1b1;
+  text-transform: uppercase;
+  padding: 0.5rem;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+  background-color: #2e3856;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.calendar-day:hover:not(.empty) {
+  background-color: #4255ff;
+}
+
+.calendar-day.empty {
+  background-color: transparent;
+}
+
+.calendar-day.current {
+  background-color: #4255ff;
+  font-weight: bold;
+}
+
+/* Animacje */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stats-grid,
+.achievement-badge,
+.calendar-grid {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-day {
+    font-size: 0.8rem;
+  }
+}

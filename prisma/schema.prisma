@@ -1,6 +1,6 @@
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 generator client {
@@ -8,24 +8,111 @@ generator client {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  sets     Set[]
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  password      String
+  name          String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sets          Set[]
+  quizzes       Quiz[]
+  userStats     UserStats?
+  quizAttempts  QuizAttempt[]
+  cardProgress  CardProgress[]
+}
+
+model UserStats {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @unique
+  user                User      @relation(fields: [userId], references: [id])
+  totalSets           Int       @default(0)
+  totalQuizzes        Int       @default(0)
+  totalCards          Int       @default(0)
+  correctAnswers      Int       @default(0)
+  incorrectAnswers    Int       @default(0)
+  bestQuizScore       Int?
+  longestStreak       Int       @default(0)
+  todayQuizzes        Int       @default(0)
+  lastQuizDate        DateTime?
+  totalStudyTime      Int       @default(0) // w minutach
+  // Nowe pola dla trybu nauki
+  totalCardsLearned   Int       @default(0)
+  masteredCards       Int       @default(0)
+  totalLearnSessions  Int       @default(0)
+  todayLearnSessions  Int       @default(0)
+  lastLearnDate       DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
 
 model Set {
-  id     Int    @id @default(autoincrement())
-  title  String
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
-  cards  Card[]
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String?
+  isPublic      Boolean   @default(false)
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  cards         Card[]
+  quizzes       Quiz[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Card {
-  id       Int    @id @default(autoincrement())
-  question String
-  answer   String
-  setId    Int
-  set      Set    @relation(fields: [setId], references: [id])
+  id            Int       @id @default(autoincrement())
+  question      String
+  answer        String
+  hint          String?
+  difficulty    Int       @default(1)
+  setId         Int
+  set           Set       @relation(fields: [setId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  progress      CardProgress[]
+}
+
+model CardProgress {
+  id            Int       @id @default(autoincrement())
+  cardId        Int
+  userId        Int
+  card          Card      @relation(fields: [cardId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+  mastery       Float     @default(0)
+  attempts      Int       @default(0)
+  correct       Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([cardId, userId])
+}
+
+model Quiz {
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String?
+  timeLimit     Int?      // w sekundach
+  maxAttempts   Int?      // maksymalna liczba prób
+  passingScore  Int?      // minimalny wynik do zaliczenia
+  isPublic      Boolean   @default(false)
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  setId         Int
+  set           Set       @relation(fields: [setId], references: [id])
+  quizAttempts  QuizAttempt[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model QuizAttempt {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id])
+  quizId        Int
+  quiz          Quiz      @relation(fields: [quizId], references: [id])
+  score         Int
+  timeSpent     Int       // w sekundach
+  completedAt   DateTime  @default(now())
+  answers       String    // przechowuje odpowiedzi użytkownika jako JSON string
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }

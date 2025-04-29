@@ -1,0 +1,119 @@
+/* Animacje */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms ease-in;
+}
+
+/* Stylizacja przycisków odpowiedzi */
+.answer-button {
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.answer-button:hover {
+  border-color: #4255ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(66, 85, 255, 0.1);
+}
+
+.answer-button:active {
+  transform: translateY(0);
+}
+
+.answer-button.selected {
+  @apply bg-[#4255ff] text-white;
+}
+
+.answer-button.correct {
+  @apply bg-green-500 text-white;
+}
+
+.answer-button.incorrect {
+  @apply bg-red-500 text-white;
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #1a1d28;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #4255ff;
+  transition: width 0.3s ease;
+}
+
+/* Timer */
+.timer {
+  @apply text-2xl font-bold;
+}
+
+.timer.warning {
+  @apply text-yellow-500;
+}
+
+.timer.danger {
+  @apply text-red-500;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Animacje */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mb-8 {
+  animation: fadeIn 0.3s ease-out;
+}
+
+textarea {
+  min-height: 100px;
+  color: white;
+  outline: none;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+textarea:focus {
+  border-color: #4255ff;
+}

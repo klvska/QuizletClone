@@ -2,15 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
+
 body {
-    font-family: 'Nunito', sans-serif;
-    /*background-color: #a6c5ff;*/
-    display: flex;
+  font-family: "Nunito", sans-serif;
+  background-color: #0a092d;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dodatkowe style dla przycisków */
+.btn-primary {
+  @apply bg-[#4255ff] hover:bg-[#423ed8] text-white transition-all duration-300;
+}
+
+.btn-secondary {
+  @apply bg-[#2e3856] hover:bg-[#282e3e] text-white transition-all duration-300;
+}
+
+/* Style dla kart */
+.card-container {
+  @apply bg-[#2e3856] rounded-xl shadow-lg;
+}
+
+/* Style dla nagłówków */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply text-white;
+}
+
+/* Style dla tekstu */
+.text-primary {
+  @apply text-[#4255ff];
+}
+
+.text-secondary {
+  @apply text-[#939bb4];
+}
+
+/* Animacje */
+.hover-scale {
+  @apply transform transition-transform duration-300 hover:scale-105;
+}
+
+/* Efekt szkła */
+.glass {
+  @apply bg-opacity-80 backdrop-blur-lg;
 }
