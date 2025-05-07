@@ -27,7 +27,7 @@ Klon popularnej aplikacji Quizlet do nauki poprzez fiszki i quizy.
 
 1. Sklonuj repozytorium:
 ```bash
-git clone https://github.com/your-username/QuizletClone.git
+git clone https://github.com/klvska/QuizletClone.git
 cd QuizletClone
 ```
 
@@ -81,11 +81,3 @@ QuizletClone/
 │   └── package.json      # Zależności backendu
 └── package.json          # Zależności frontendu
 ```
-
-## Kontrybucja
-
-1. Forkuj repozytorium
-2. Utwórz nową gałąź (`git checkout -b feature/nowa-funkcjonalnosc`)
-3. Zatwierdź zmiany (`git commit -am 'Dodaj nową funkcjonalność'`)
-4. Wypchnij zmiany (`git push origin feature/nowa-funkcjonalnosc`)
-5. Utwórz Pull Request
